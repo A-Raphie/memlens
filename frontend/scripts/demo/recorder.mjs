@@ -48,6 +48,20 @@ const t0 = Date.now();
 const mark = (name) => console.log(`[marker] ${name} ${((Date.now() - t0) / 1000).toFixed(2)}`);
 const hold = (ms) => page.waitForTimeout(ms);
 
+// ---- Audio-driven timeline ----
+// Paragraph boundaries measured from the generated VO (silencedetect +
+// word-rate alignment). The mux delays audio by HEAD seconds (the stage
+// mount), so scene i must be on screen by SEG[i] + HEAD - EARLY wall-clock.
+const SEG = [16.48, 29.40, 50.27, 57.95, 69.89, 84.23, 100.80, 108.57];
+const HEAD = 1.2;
+const EARLY = 0.4;
+const at = async (i) => {
+  const target = (i === 0 ? 0 : SEG[i - 1]) + HEAD - EARLY;
+  const need = target - (Date.now() - t0) / 1000;
+  if (need > 0) await page.waitForTimeout(need * 1000);
+  else console.log(`[timeline] scene ${i + 1} LATE by ${(-need).toFixed(1)}s`);
+};
+
 let page;
 
 async function navFrameto(url, waitMs = 4000) {
@@ -137,94 +151,96 @@ const composeOut = execSync("docker compose ps", { cwd: path.resolve(HERE, "../.
   .toString().trim().split("\n").slice(0, 3).map(l => l.replace(/\s+/g, " ")).join("\n");
 const statsJson = execSync(`curl -s ${API}/api/stats`).toString();
 
-// ---- Scene 1: hook, live graph ----
+// ---- Scene 1: hook, live graph (audio P1: 0 → 16.5) ----
+await at(0);
 await mountStage(page, { title: "MemLens · Agent Memory Debugger", url: `${APP}/app` });
 await injectCursor(page);
 let frame = page.frameLocator("#__app");
 await frame.locator("canvas").first().waitFor({ state: "visible", timeout: 20000 });
-await hold(5000); // layout animation settles
+await hold(4000); // layout animation settles
 mark("s1_graph_visible");
-await hold(3000);
+await hold(1500);
 // slow canvas pan
 await page.mouse.move(900, 480);
 await page.mouse.down();
 for (let i = 1; i <= 10; i++) await page.mouse.move(900 - i * 16, 480 - i * 5);
 await page.mouse.up();
 mark("s1_pan_done");
-await hold(2500);
+await at(1);
 
-// ---- Scene 2: problem on the landing ----
-frame = await navFrameto(`${APP}/`, 3500);
+// ---- Scene 2: problem on the landing (audio P2: 16.5 → 29.4) ----
+frame = await navFrameto(`${APP}/`, 3000);
 await frame.locator(".landing-hero-metrics").waitFor({ state: "visible", timeout: 10000 });
 mark("s2_hero_visible");
-await hold(3500);
-await frame.locator(":root").evaluate((el) => el.scrollTo({ top: 1500, behavior: "smooth" }));
-await hold(4500);
-mark("s2_problem_shown");
 await hold(2500);
+await frame.locator(":root").evaluate((el) => el.scrollTo({ top: 1500, behavior: "smooth" }));
+await hold(4000);
+mark("s2_problem_shown");
+await at(2);
 
-// ---- Scene 3: live ingest ----
-frame = await navFrameto(`${APP}/app`, 4500);
+// ---- Scene 3: live ingest (audio P3: 29.4 → 50.3) ----
+frame = await navFrameto(`${APP}/app`, 4000);
 await frame.locator("canvas").first().waitFor({ state: "visible", timeout: 20000 });
-await hold(1500);
+await hold(1000);
 await clickCursor(page, frame.locator(".upload-dropzone"));
 await frame.locator("input.upload-input").setInputFiles(DEMO_FILE);
 await frame.locator(".stats-status", { hasText: "Ingested" }).waitFor({ timeout: 30000 });
 mark("s3_ingested");
-await hold(4000); // counts tick, new nodes appear
+await hold(3000); // counts tick, new nodes appear
 mark("s3_counts_updated");
-await hold(2500);
+await at(3);
 
-// ---- Scene 4: inspect a fact node ----
+// ---- Scene 4: inspect a fact node (audio P4: 50.3 → 58.0) ----
 await canvasClickAt(frame, '[type="Fact"]');
 await frame.locator(".node-card").waitFor({ state: "visible", timeout: 8000 });
 mark("s4_inspect_filled");
-await hold(2500);
+await hold(1500);
 const edgeTarget = frame.locator(".edge-target").first();
 if (await edgeTarget.count() > 0) {
   await clickCursor(page, edgeTarget);
-  await hold(2000);
+  await hold(1500);
 }
 mark("s4_jump_done");
-await hold(1500);
+await at(4);
 
-// ---- Scene 5: contradictions ----
+// ---- Scene 5: contradictions (audio P5: 58.0 → 69.9) ----
 const conflictsSection = frame.locator(".sidebar-section", { hasText: "Contradictions" });
 await conflictsSection.scrollIntoViewIfNeeded();
-await hold(1200);
+await hold(1000);
 mark("s5_conflicts_visible");
 await clickCursor(page, frame.locator(".conflict-card").first());
 await hold(2500);
 mark("s5_pair_clicked");
-await hold(2000);
+await at(5);
 
-// ---- Scene 6: query console, NL then Cypher ----
+// ---- Scene 6: query console (audio P6: 69.9 → 84.2 — tight window, type fast) ----
 await clickCursor(page, frame.locator(".query-input"));
-await typeSlow("Python");
-await hold(600);
+await typeSlow("Python", 45);
+await hold(400);
 await clickCursor(page, frame.locator(".query-btn"));
 await frame.locator(".result-card").first().waitFor({ timeout: 15000 });
 mark("s6_nl_results");
-await hold(3500);
+await hold(2000);
 await frame.locator(".query-input").fill("");
 await clickCursor(page, frame.locator(".query-input"));
-await typeSlow("MATCH (f:Fact) RETURN f.content AS c ORDER BY c LIMIT 5");
-await hold(1200); // chip shows CYPHER
+await typeSlow("MATCH (f:Fact) RETURN f.content AS c ORDER BY c LIMIT 5", 45);
+await hold(900); // chip shows CYPHER
 mark("s6_chip_cypher");
 await clickCursor(page, frame.locator(".query-btn"));
-await hold(3500);
+await hold(2500);
 mark("s6_cypher_results");
-await hold(2000);
+await at(6);
 
-// ---- Scene 7: HydraDB proof (real terminal output) ----
+// ---- Scene 7: HydraDB proof (audio P7: 84.2 → 100.8) ----
 await showOverlay(terminalHtml(statsJson, composeOut));
 mark("s7_terminal");
-await hold(11000);
+await at(7);
 
-// ---- Scene 8: end card ----
+// ---- Scene 8: end card (audio P8: 100.8 → 108.6) ----
 await showOverlay(endCardHtml);
 mark("s8_endcard");
-await hold(8000);
+// hold past the last VO word (audio ends at SEG[7]+HEAD) plus a beat
+await page.waitForTimeout(Math.max(0, (SEG[7] + HEAD + 1.8) * 1000 - (Date.now() - t0)));
 
 mark("end");
 await context.close(); // finalizes the video

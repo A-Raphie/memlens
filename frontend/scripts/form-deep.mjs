@@ -1,0 +1,12 @@
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright-core");
+const b = await chromium.launch({ channel: "chrome", headless: true });
+const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
+await p.goto("https://docs.google.com/forms/d/e/1FAIpQLSdXpGqgsxPKRlaii1MXjlFCAfKYRBOxO8xa801LmT6z65IejA/viewform", { waitUntil: "networkidle", timeout: 30000 });
+await p.waitForTimeout(3000);
+const body = await p.evaluate(() => document.body.innerText.replace(/\n{2,}/g, "\n").slice(0, 2500));
+console.log(body);
+const inputs = await p.evaluate(() => [...document.querySelectorAll("input, textarea")].map((i) => `${i.type}:${i.name?.slice(0, 40) || i.id?.slice(0, 40)}:${(i.getAttribute("aria-label") || "").slice(0, 60)}`));
+console.log("INPUTS:", JSON.stringify(inputs, null, 1));
+await b.close();
