@@ -1,0 +1,10 @@
+import { chromium } from "playwright-core";
+const [url, out, waitStr, fullStr] = process.argv.slice(2);
+const b = await chromium.launch({ channel: "chrome", headless: true });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+p.on("pageerror", (e) => console.log("PAGEERROR", String(e).slice(0, 200)));
+await p.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+await p.waitForTimeout(parseInt(waitStr || "5000", 10));
+await p.screenshot({ path: out, fullPage: fullStr === "full" });
+console.log("SAVED", out);
+await b.close();

@@ -1,0 +1,70 @@
+services:
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  hydradb:
+    image: ghcr.io/hydra-db/hydradb:latest
+    ports:
+      - "7687:7687"
+      - "8443:8443"
+      - "9090:9090"
+    environment:
+      CLOUD_PROVIDER: local
+      LOCAL_PATH: /data/store
+      GRAPH_NAMESPACE: default
+      GRAPH_ID: default
+      GRAPH_CELL_ID: cell-0
+      GRAPH_CELLS: cell-0
+      GRAPH_NODE_ID: node-0
+      GRAPH_BOLT_NODE_ADDRESSES: node-0=127.0.0.1:7687
+      GRAPH_ADVERTISED_BOLT_ADDR: 127.0.0.1:7687
+      GRAPH_DATA_CACHE_DIR: /data/cache
+      GRAPH_AUTH_TOKEN_FILE: /data/auth-token
+      GRAPH_ALLOW_PLAINTEXT: "true"
+      RUST_MIN_STACK: "33554432"
+    user: "501:20"
+    volumes:
+      - ./hydradb-data:/data
+    entrypoint:
+      - sh
+      - -c
+      - |
+        mkdir -p /data/store /data/cache
+        [ -f /data/auth-token ] || printf '%s\n' 'local-development-token-32-bytes' > /data/auth-token
+        exec /usr/local/bin/graph-node
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      HYDRADB_HOST: hydradb
+      HYDRADB_PORT: 7687
+      HYDRADB_TOKEN: ""
+    depends_on:
+      - hydradb
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  minio_data:
+  hydradb_data:

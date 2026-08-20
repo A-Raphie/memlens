@@ -1,0 +1,26 @@
+{
+  "questions": [
+    {
+      "question_id": "demo_extra_001",
+      "question_date": "2026-08-18",
+      "question_type": "single-session-user",
+      "haystack_sessions": [
+        [
+          { "role": "user", "content": "Actually I switched everything off Render. I do not like Render anymore, deployment kept failing. Vercel handles all my deploys now." },
+          { "role": "assistant", "content": "Got it. Your deploys now run on Vercel and you've moved away from Render after the failures." }
+        ]
+      ]
+    },
+    {
+      "question_id": "demo_extra_002",
+      "question_date": "2026-08-18",
+      "question_type": "single-session-user",
+      "haystack_sessions": [
+        [
+          { "role": "user", "content": "Also I stopped using Python for new pipelines. I prefer Go now for data pipelines, the concurrency is better." },
+          { "role": "assistant", "content": "Understood. New data pipelines are written in Go; you've moved away from Python for that." }
+        ]
+      ]
+    }
+  ]
+}

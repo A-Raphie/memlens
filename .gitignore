@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+
+# Local HydraDB storage (bind-mounted data dir)
+hydradb-data/
+
+# OS / editor
+.DS_Store
+*.log

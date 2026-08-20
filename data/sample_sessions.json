@@ -1,0 +1,146 @@
+[
+  {
+    "question_id": "sample_001",
+    "question_type": "single-session-user",
+    "question": "What programming language does the user prefer?",
+    "answer": "Python",
+    "question_date": "2026-08-15",
+    "haystack_sessions": [
+      [
+        {
+          "role": "user",
+          "content": "I've been working on a data pipeline project. I usually write everything in Python because it's so quick to prototype with.",
+          "has_answer": false
+        },
+        {
+          "role": "assistant",
+          "content": "Python is a great choice for data pipelines. Libraries like pandas and PySpark make it easy to build ETL workflows quickly.",
+          "has_answer": false
+        },
+        {
+          "role": "user",
+          "content": "Yeah exactly. I tried Go once for this but Python was just faster to iterate on.",
+          "has_answer": true
+        }
+      ]
+    ]
+  },
+  {
+    "question_id": "sample_002",
+    "question_type": "multi-session",
+    "question": "What is the user's preferred database?",
+    "answer": "PostgreSQL, but they also use Redis for caching",
+    "question_date": "2026-08-16",
+    "haystack_sessions": [
+      [
+        {
+          "role": "user",
+          "content": "For my main app I always use PostgreSQL. It's reliable and the JSON support is solid.",
+          "has_answer": false
+        },
+        {
+          "role": "assistant",
+          "content": "PostgreSQL is excellent for most use cases. The JSONB type gives you flexible schema when you need it.",
+          "has_answer": false
+        }
+      ],
+      [
+        {
+          "role": "user",
+          "content": "I also started using Redis for caching recently. It's been great for session storage.",
+          "has_answer": true
+        },
+        {
+          "role": "assistant",
+          "content": "Redis is perfect for caching and session storage. The sub-millisecond latency makes a big difference for read-heavy workloads.",
+          "has_answer": false
+        }
+      ]
+    ]
+  },
+  {
+    "question_id": "sample_003",
+    "question_type": "knowledge-update",
+    "question": "What framework does the user use for their frontend?",
+    "answer": "They switched from Vue to React",
+    "question_date": "2026-08-17",
+    "haystack_sessions": [
+      [
+        {
+          "role": "user",
+          "content": "I've been building my frontend with Vue 3. The composition API is really clean.",
+          "has_answer": false
+        },
+        {
+          "role": "assistant",
+          "content": "Vue 3's Composition API is a big improvement. It makes code reuse much cleaner than the old mixins approach.",
+          "has_answer": false
+        }
+      ],
+      [
+        {
+          "role": "user",
+          "content": "Actually I just switched to React for this project. The ecosystem is bigger and I need more third-party components.",
+          "has_answer": true
+        },
+        {
+          "role": "assistant",
+          "content": "React's ecosystem is hard to beat. The component library options like shadcn/ui and Radix make building UIs much faster.",
+          "has_answer": false
+        }
+      ]
+    ]
+  },
+  {
+    "question_id": "sample_004",
+    "question_type": "temporal-reasoning",
+    "question": "What was the user working on last week?",
+    "answer": "Deploying a machine learning model to production",
+    "question_date": "2026-08-14",
+    "haystack_sessions": [
+      [
+        {
+          "role": "user",
+          "content": "I need help setting up a Docker container for my ML model. I want to deploy it behind a FastAPI endpoint.",
+          "has_answer": false
+        },
+        {
+          "role": "assistant",
+          "content": "Here's a solid pattern: use a multi-stage Docker build. First stage installs dependencies and trains/loads the model, second stage is a slim image that just runs the API server.",
+          "has_answer": false
+        },
+        {
+          "role": "user",
+          "content": "That worked perfectly. The container went from 2GB to 200MB with the multi-stage build.",
+          "has_answer": true
+        }
+      ]
+    ]
+  },
+  {
+    "question_id": "sample_005",
+    "question_type": "single-session-assistant",
+    "question": "What deployment platform does the user prefer?",
+    "answer": "Render, but they mentioned trying Vercel",
+    "question_date": "2026-08-16",
+    "haystack_sessions": [
+      [
+        {
+          "role": "user",
+          "content": "I've been deploying everything to Render lately. The free tier is generous and the Docker support works well.",
+          "has_answer": false
+        },
+        {
+          "role": "assistant",
+          "content": "Render is a solid choice for small to medium projects. Their Docker support means you can deploy almost anything.",
+          "has_answer": false
+        },
+        {
+          "role": "user",
+          "content": "I tried Vercel too but it's more focused on Next.js. Render is more flexible for Python backends.",
+          "has_answer": true
+        }
+      ]
+    ]
+  }
+]
